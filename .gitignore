@@ -1,0 +1,9 @@
+venv/
+.env
+__pycache__/
+*.pyc
+story_image.png
+generated_story.png
+.cursor/
+terminals/
+*.log
