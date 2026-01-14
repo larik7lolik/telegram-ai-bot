@@ -42,9 +42,10 @@ def job():
         logger.error(f"Error during scheduled job: {e}")
 
 # НАСТРОЙКА РАСПИСАНИЯ
-# Вы можете настроить время (по UTC или вашему локальному)
-schedule.every().day.at("11:00").do(job)  # Утренний пост
-schedule.every().day.at("21:00").do(job)  # Вечерний пост
+# Время указано в UTC (МСК = UTC+3)
+# 9:00 МСК = 6:00 UTC, 21:00 МСК = 18:00 UTC
+schedule.every().day.at("06:00").do(job)  # Утренний пост (9:00 МСК)
+schedule.every().day.at("18:00").do(job)  # Вечерний пост (21:00 МСК)
 
 if __name__ == "__main__":
     logger.info("Scheduler started. Waiting for scheduled times...")
