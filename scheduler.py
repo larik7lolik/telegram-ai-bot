@@ -19,8 +19,8 @@ def job():
 
 # НАСТРОЙКА РАСПИСАНИЯ
 # Вы можете настроить время (по UTC или вашему локальному)
-schedule.every().day.at("09:00").do(job)  # Утренний пост
-schedule.every().day.at("18:00").do(job)  # Вечерний пост
+schedule.every().day.at("11:00").do(job)  # Утренний пост
+schedule.every().day.at("21:00").do(job)  # Вечерний пост
 
 if __name__ == "__main__":
     logger.info("Scheduler started. Waiting for scheduled times...")

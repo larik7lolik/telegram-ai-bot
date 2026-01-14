@@ -2,3 +2,4 @@ requests
 python-dotenv
 python-telegram-bot>=21.0
 Pillow
+schedule
