@@ -1,72 +1,67 @@
-import requests
-import os
-import time
 import base64
+import requests
+import urllib3
 from config import Config
-from urllib3.util.retry import Retry
-from requests.adapters import HTTPAdapter
+
 
 class ImageGenerator:
     def __init__(self):
-        self.api_key = Config.SILICON_FLOW_API_KEY
-        self.url = "https://api.siliconflow.cn/v1/images/generations"
-        self.model = Config.SILICON_FLOW_IMAGE_MODEL
-        
-        self.session = requests.Session()
-        retry_strategy = Retry(
-            total=5,
-            backoff_factor=1,
-            status_forcelist=[429, 500, 502, 503, 504],
-        )
-        adapter = HTTPAdapter(max_retries=retry_strategy)
-        self.session.mount("https://", adapter)
+        self.api_key = Config.PROXYAPI_OPENAI_KEY
+        self.url = "https://api.proxyapi.ru/openai/v1/images/generations"
+        # Можешь вынести в Config, если захочешь менять из .env
+        self.model = "gpt-image-1"
+        if not Config.SSL_VERIFY:
+            urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
-    def generate_image(self, prompt, output_path="generated_story.png"):
+    def generate_image(self, prompt: str, output_path: str = "story_image.png") -> str:
         """
-        Generates a vertical image using SiliconFlow (FLUX.1).
+        Генерирует вертикальное изображение через GPT-Image 1 (ProxyAPI).
+        Возвращает путь к сохранённому файлу.
         """
         if not self.api_key:
-            raise ValueError("SILICON_FLOW_API_KEY is not set")
+            raise ValueError("PROXYAPI_OPENAI_KEY is not set")
+
+        prompt = (prompt or "").strip()
+        if not prompt:
+            raise ValueError("Image prompt is empty")
 
         headers = {
             "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
         }
 
-        # SiliconFlow FLUX.1 parameters
         payload = {
             "model": self.model,
             "prompt": prompt,
-            "image_size": "768x1344", # Vertical 9:16 approx for FLUX
-            "batch_size": 1,
-            "num_inference_steps": 20,
-            "guidance_scale": 7.5
+            # Вертикальный формат для сторис
+            "size": "1024x1536",
+            # Баланс качество/скорость
+            "quality": "medium",
+            # Удобно сразу PNG
+            "output_format": "png",
         }
 
-        # 1. Start generation
-        max_retries = 3
-        for attempt in range(max_retries):
-            try:
-                response = self.session.post(self.url, headers=headers, json=payload, timeout=90)
-                if response.status_code != 200:
-                    raise Exception(f"SiliconFlow Art error: {response.text}")
-                
-                result = response.json()
-                image_url = result["data"][0]["url"]
-                break
-            except Exception as e:
-                if attempt < max_retries - 1:
-                    print(f"Error in SiliconFlow (Attempt {attempt + 1}), retrying... {e}")
-                    time.sleep(5)
-                    continue
-                raise e
+        resp = requests.post(
+            self.url,
+            headers=headers,
+            json=payload,
+            timeout=120,
+            verify=Config.SSL_VERIFY,
+        )
+        if resp.status_code != 200:
+            raise Exception(f"GPT-Image error: {resp.status_code} {resp.text}")
 
-        # 2. Download the image
-        img_response = self.session.get(image_url, timeout=60)
-        if img_response.status_code == 200:
-            with open(output_path, "wb") as f:
-                f.write(img_response.content)
-        else:
-            raise Exception(f"Failed to download image from {image_url}")
-        
+        data = resp.json()
+
+        # Для gpt-image-1 ProxyAPI возвращает base64 в поле b64_json
+        try:
+            image_b64 = data["data"][0]["b64_json"]
+        except (KeyError, IndexError) as e:
+            raise Exception(f"Unexpected GPT-Image response: {data}") from e
+
+        img_bytes = base64.b64decode(image_b64)
+
+        with open(output_path, "wb") as f:
+            f.write(img_bytes)
+
         return output_path

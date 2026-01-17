@@ -13,8 +13,8 @@ def run_automation(theme=None):
     Main workflow: 
     1. Pick content from CSV (random or by theme)
     2. Use text from CSV or generate via YandexGPT
-    3. Generate image prompt (Qwen via SiliconFlow)
-    4. Generate image (FLUX.1 via SiliconFlow)
+    3. Generate image prompt (local rules-based prompt)
+    4. Generate image (gpt-image-1 via ProxyAPI)
     5. Publish to Telegram
     """
     logger.info("Starting automated content generation cycle...")
@@ -54,7 +54,7 @@ def run_automation(theme=None):
         logger.info(f"Generated Image Prompt: {image_prompt}")
         
         # 4. Generate Image
-        logger.info("Generating image via SiliconFlow (FLUX.1)...")
+        logger.info("Generating image via ProxyAPI (gpt-image-1)...")
         image_path = "story_image.png"
         image_gen.generate_image(image_prompt, image_path)
         

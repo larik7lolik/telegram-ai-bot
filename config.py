@@ -1,9 +1,11 @@
-import os
 from dotenv import load_dotenv
+import os
 
 load_dotenv()
 
+
 class Config:
+    PROXYAPI_OPENAI_KEY = os.getenv("PROXYAPI_OPENAI_KEY")
     # API Keys & Auth
     # YandexGPT Settings
     YANDEX_API_KEY = os.getenv("YANDEX_API_KEY")
@@ -11,12 +13,8 @@ class Config:
     
     # Yandex Art (Image Generation)
     # Available from Russia, no VPN needed. Uses same auth as YandexGPT.
-    YANDEX_ART_MODEL_URI = f"art://{os.getenv('YANDEX_FOLDER_ID')}/yandex-art/latest"
+    #YANDEX_ART_MODEL_URI = f"art://{os.getenv('YANDEX_FOLDER_ID')}/yandex-art/latest"
     
-    # SiliconFlow Settings
-    SILICON_FLOW_API_KEY = os.getenv("SILICON_FLOW_API_KEY")
-    SILICON_FLOW_TEXT_MODEL = "Qwen/Qwen2.5-7B-Instruct"
-    SILICON_FLOW_IMAGE_MODEL = "black-forest-labs/FLUX.1-schnell"
 
     # Telegram Settings
     TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
@@ -38,3 +36,5 @@ class Config:
     # Image Generation Settings (9:16)
     IMAGE_WIDTH = 1024
     IMAGE_HEIGHT = 1024 
+    # Requests SSL verification (set SSL_VERIFY=0 to disable)
+    SSL_VERIFY = os.getenv("SSL_VERIFY", "1").strip().lower() in ("1", "true", "yes")
